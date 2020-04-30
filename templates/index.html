@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <div id="player"></div>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"
+        integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port + '/youtube');
+
+        var tag = document.createElement('script');
+
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            window.player = new YT.Player('player', {
+                height: '360',
+                width: '640',
+                videoId: 'uq7uJoXj39I-VE',
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        var player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '360',
+                width: '640',
+                videoId: 'M7lc1UVf-VE',
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        socket.on('my response', function (msg) {
+            console.log("recebendo msg:", msg.data)
+            if (player) {
+                if (msg.data.play) {
+                    player.playVideo();
+                } else {
+                    player.stopVideo();
+                }
+            }
+        });
+
+        function onPlayerReady(event) {
+            console.log("carregou ai")
+
+        }
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+                socket.emit('my broadcast event', { data: { play: true } })
+            }
+            if (event.data == YT.PlayerState.PAUSED) {
+                socket.emit('my broadcast event', { data: { play: false } })
+            }
+        }
+        function stopVideo() {
+            player.stopVideo();
+        }
+    </script>
+</body>
+
+</html>
